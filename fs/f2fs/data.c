@@ -1047,8 +1047,11 @@ static ssize_t f2fs_direct_IO(int rw, struct kiocb *iocb,
 	if (check_direct_IO(inode, rw, iter, offset))
 		return 0;
 
-	return blockdev_direct_IO(rw, iocb, inode, iter, offset,
-				  get_data_block);
+	/* clear fsync mark to recover these blocks */
+	fsync_mark_clear(F2FS_SB(inode->i_sb), inode->i_ino);
+
+	return blockdev_direct_IO(rw, iocb, inode, iov, offset, nr_segs,
+							get_data_block);
 }
 
 static void f2fs_invalidate_data_page(struct page *page, unsigned int offset,
